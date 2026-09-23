@@ -25,3 +25,17 @@ models:
     marts:
       +materialized: table
       +schema: marts
+
+seeds:
+  food_warehouse:
+    +schema: staging
+    category_taxonomy:
+      +column_types:
+        category_l2: text
+        category_l1: text
+        description: text
+    category_mapping:
+      +column_types:
+        off_category_tag: text
+        category_l2: text
+        priority: int

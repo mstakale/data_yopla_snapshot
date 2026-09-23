@@ -1,0 +1,49 @@
+category_l2,category_l1,description
+cheese,dairy,Cheeses of all kinds
+yoghurt_fermented,dairy,Yoghurt and fermented dairy desserts
+milk_cream,dairy,Milk and dairy drinks
+dairy_desserts,dairy,Sweet dairy desserts (not yoghurt)
+meat_general,meat_fish_protein,Meat and meat preparations of unspecified type
+poultry,meat_fish_protein,Chicken and other poultry
+pork,meat_fish_protein,Pork products
+beef,meat_fish_protein,Beef products
+sausages_cold_cuts,meat_fish_protein,Sausages and cold cuts
+fish_seafood,meat_fish_protein,Fish and seafood
+eggs,meat_fish_protein,Eggs
+meat_alternatives,plant_protein,Plant-based meat substitutes
+legumes_pulses,plant_protein,Beans lentils and other legume products
+dairy_alternatives,plant_protein,Plant milks and dairy substitutes
+nuts_seeds,plant_protein,Nuts and seeds
+fresh_vegetables,vegetables,Fresh and prepared vegetables
+canned_preserved_vegetables,vegetables,Canned or preserved vegetables
+fresh_fruit,fruit,Fresh and prepared fruit
+bread,grains_bread_pasta,Bread
+pasta_noodles,grains_bread_pasta,Pasta and noodles
+breakfast_cereals,grains_bread_pasta,Breakfast cereals and muesli
+grains_potatoes_other,grains_bread_pasta,Grains and potatoes not further specified
+salty_snacks,snacks_sweets,Chips crisps and savory snacks
+sweet_snacks_confectionery,snacks_sweets,Biscuits cakes and candy
+chocolate,snacks_sweets,Chocolate products
+desserts_ice_cream,snacks_sweets,Non-dairy desserts and ice cream
+sweet_spreads,snacks_sweets,Jam peanut butter and sweeteners
+water,beverages,Water
+soda_carbonated,beverages,Soda and carbonated drinks
+juice,beverages,Juices and nectars
+hot_beverages,beverages,Coffee and tea
+alcoholic,beverages,Beer wine and spirits
+beverages_other,beverages,Generic or unspecified beverages
+savory_sauces,sauces_condiments,Sauces and condiments
+savory_spreads,sauces_condiments,Savory spreads
+cooking_aids_spices,sauces_condiments,Spices and cooking or baking helpers
+vegetable_oils,fats_oils,Cooking and olive oils
+margarine_spreadable_fats,fats_oils,Margarine and spreadable fats
+meals_general,ready_meals,Prepared meals
+soups,ready_meals,Soups
+salads_prepared,ready_meals,Prepared salads
+canned_general,ready_meals,Canned foods not further specified
+frozen_foods,ready_meals,Frozen foods not further specified
+beauty_personal_care,non_food,Cosmetics skincare and perfume
+home_pet_auto,non_food,Home pet and car-care products
+dietary_supplements,other,Dietary and bodybuilding supplements
+baby_food,other,Baby food
+other,other,True fallback for unmapped or uncategorised products

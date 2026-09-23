@@ -1,0 +1,29 @@
+version: 2
+
+seeds:
+  - name: category_taxonomy
+    description: >
+      Two-level food category taxonomy (category_l1/category_l2), one row per
+      L2 category. Becomes dim_category in marts.
+    columns:
+      - name: category_l2
+        data_tests:
+          - unique
+          - not_null
+
+  - name: category_mapping
+    description: >
+      Maps Open Food Facts category tags to a category_l2. priority resolves
+      conflicts when a product carries multiple mapped tags - lower number
+      wins (more specific tags get a lower number than broad umbrella tags).
+    columns:
+      - name: off_category_tag
+        data_tests:
+          - unique
+          - not_null
+      - name: category_l2
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('category_taxonomy')
+              field: category_l2

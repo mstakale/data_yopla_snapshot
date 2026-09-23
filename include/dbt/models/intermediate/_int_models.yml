@@ -1,1 +1,19 @@
-# Day 3: schema/doc definitions for int_products_categorised. Not implemented yet.
+version: 2
+
+models:
+  - name: int_products_categorised
+    description: >
+      One row per barcode, resolved to a single category_l2/category_l1 via
+      seeds/category_mapping.csv (best match by priority, ties broken
+      alphabetically by tag). mapping_status distinguishes no_categories
+      (no tags at all), unmapped (tags present, none mapped yet), and mapped.
+    columns:
+      - name: barcode
+        data_tests:
+          - unique
+          - not_null
+      - name: mapping_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['mapped', 'unmapped', 'no_categories']
