@@ -1,5 +1,87 @@
-# Day 6: CI workflow triggered on push and pull_request. Starts a Postgres
-# service container, installs dbt from a pinned file, runs
-# scripts/load_sample.py to load tests/fixtures/sample_products.csv into
-# raw.products, then runs `dbt deps`, `dbt seed` and `dbt build`.
-# Not implemented yet.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: warehouse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      WAREHOUSE_HOST: localhost
+      WAREHOUSE_PORT: "5432"
+      WAREHOUSE_USER: postgres
+      WAREHOUSE_PASSWORD: postgres
+      WAREHOUSE_DB: warehouse
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements-dbt.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dbt.txt -r requirements-dev.txt "psycopg[binary]==3.3.6"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Load fixture into raw.products
+        run: python scripts/load_sample.py
+
+      - name: dbt deps
+        working-directory: include/dbt
+        run: dbt deps --profiles-dir .
+
+      - name: dbt seed
+        working-directory: include/dbt
+        run: dbt seed --profiles-dir .
+
+      - name: dbt source freshness
+        working-directory: include/dbt
+        run: dbt source freshness --profiles-dir .
+
+      - name: dbt build
+        working-directory: include/dbt
+        run: dbt build --profiles-dir . --vars '{"load_date": "2024-01-01"}'
+
+      - name: dbt docs generate
+        working-directory: include/dbt
+        run: dbt docs generate --profiles-dir .
+
+      - name: Upload dbt artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-artifacts
+          path: |
+            include/dbt/target/run_results.json
+            include/dbt/target/index.html
+            include/dbt/target/manifest.json
+            include/dbt/target/catalog.json
+          if-no-files-found: warn

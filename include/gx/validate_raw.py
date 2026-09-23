@@ -130,7 +130,9 @@ def build_suite(load_date_str: str) -> gx.ExpectationSuite:
     )
 
     suite.add_expectation(gxe.ExpectColumnValuesToNotBeNull(column="barcode", description="barcode is never null"))
-    suite.add_expectation(gxe.ExpectColumnValuesToBeUnique(column="barcode", description="barcode is unique within this load"))
+    suite.add_expectation(
+        gxe.ExpectColumnValuesToBeUnique(column="barcode", description="barcode is unique within this load")
+    )
     suite.add_expectation(
         gxe.ExpectColumnValuesToMatchRegex(
             column="barcode",

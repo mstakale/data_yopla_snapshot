@@ -121,7 +121,10 @@ def dbt_rows(manifest: dict) -> list:
             elif test_type == "test_value_between":
                 where = config.get("where") or ""
                 where_txt = f", where {where}" if where else ""
-                check = f"test_value_between({column} in [{kwargs.get('min_value')}, {kwargs.get('max_value')}]{where_txt}) on {model}"
+                check = (
+                    f"test_value_between({column} in [{kwargs.get('min_value')}, "
+                    f"{kwargs.get('max_value')}]{where_txt}) on {model}"
+                )
             else:
                 check = f"{test_type}({column}) on {model}" if column else f"{test_type} on {model}"
 
@@ -139,7 +142,10 @@ def dbt_rows(manifest: dict) -> list:
             on_failure = "`dbt build` exits non-zero -> Airflow `dbt_build` task fails"
         else:
             sev_desc = f"Warn if {warn_if}, error if {error_if}"
-            on_failure = f"WARN below the error threshold ({error_if}) - build continues; ERROR above it - `dbt_build` fails. Failing rows always stored in `audit`."
+            on_failure = (
+                f"WARN below the error threshold ({error_if}) - build continues; ERROR above it - "
+                "`dbt_build` fails. Failing rows always stored in `audit`."
+            )
 
         rows.append(
             {
@@ -164,7 +170,10 @@ def source_freshness_row(manifest: dict) -> dict:
         "tool": "dbt source freshness",
         "dimension": "Timeliness",
         "severity": f"Warn after {warn['count']} {warn['period']}s, error after {err['count']} {err['period']}s",
-        "on_failure": "Reported by `dbt source freshness` (run before `dbt build` in the DAG); a stale/error result signals raw.products hasn't been reloaded recently.",
+        "on_failure": (
+            "Reported by `dbt source freshness` (run before `dbt build` in the DAG); a stale/error "
+            "result signals raw.products hasn't been reloaded recently."
+        ),
     }
 
 
@@ -234,7 +243,10 @@ def main() -> None:
     rows = dbt_rows(manifest)
     rows.append(source_freshness_row(manifest))
     rows.extend(gx_rows())
-    print(f"<!-- {len(rows)} checks total, generated from include/dbt/target/manifest.json + include/gx/validate_raw.py -->")
+    print(
+        f"<!-- {len(rows)} checks total, generated from "
+        "include/dbt/target/manifest.json + include/gx/validate_raw.py -->"
+    )
     print(render_markdown_table(rows))
 
 

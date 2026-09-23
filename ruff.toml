@@ -1,0 +1,10 @@
+# CI lint gate (.github/workflows/ci.yml). line-length=120 matches this
+# repo's actual style (long, readable log/f-string lines), not the
+# stricter 88-char default - checked directly: at 88 chars there are 48
+# hits, all line-length, none real; at 120, only 5 genuine long lines
+# remain (fixed directly rather than loosening this further).
+line-length = 120
+extend-exclude = [".astro"]
+
+[lint]
+select = ["E", "F", "W", "I"]
