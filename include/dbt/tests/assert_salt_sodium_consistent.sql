@@ -1,4 +1,4 @@
-{{ config(severity='warn', warn_if='>0', error_if='>2000') }}
+{{ config(severity='warn', warn_if='>0', error_if='>2000', description='salt approximately equals sodium x 2.5, within tolerance') }}
 
 -- Salt is chemically ~2.5x sodium by mass. Products report both
 -- independently, so some mismatch is expected upstream noise (baseline:

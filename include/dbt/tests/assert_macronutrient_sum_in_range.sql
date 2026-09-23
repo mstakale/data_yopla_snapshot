@@ -1,4 +1,4 @@
-{{ config(severity='warn', warn_if='>0', error_if='>600') }}
+{{ config(severity='warn', warn_if='>0', error_if='>600', description='fat + carbohydrates + proteins + fiber + salt per 100g <= 105g') }}
 
 -- fat + carbohydrates + proteins + fiber + salt per 100g can't physically
 -- exceed 100g by much (baseline: 212 of 34,754 products with all five
