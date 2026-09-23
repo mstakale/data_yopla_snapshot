@@ -68,7 +68,8 @@ jobs:
 
       - name: dbt build
         working-directory: include/dbt
-        run: dbt build --profiles-dir . --vars '{"load_date": "2024-01-01"}'
+        run: |
+          dbt build --profiles-dir . --vars '{"load_date": "2024-01-01"}'
 
       - name: dbt docs generate
         working-directory: include/dbt
