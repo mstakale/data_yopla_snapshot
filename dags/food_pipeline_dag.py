@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 EXTRACT_SCRIPT = Path(__file__).resolve().parents[1] / "include" / "extract" / "extract.py"
 DBT_BIN = Path("/usr/local/airflow/dbt_venv/bin/dbt")
 DBT_PROJECT_DIR = Path(__file__).resolve().parents[1] / "include" / "dbt"
+GX_PYTHON = Path("/usr/local/airflow/gx_venv/bin/python")
+VALIDATE_RAW_SCRIPT = Path(__file__).resolve().parents[1] / "include" / "gx" / "validate_raw.py"
 
 
 def get_run_load_date() -> str:
@@ -75,9 +77,23 @@ def food_pipeline():
             raise RuntimeError(f"extract.py failed for load_date={load_date} (exit {result.returncode})")
         return load_date
 
-    @task
+    # retries=0 (overriding the DAG-level default of 2): a GX failure means
+    # the data itself is bad, not a transient infra hiccup - retrying the
+    # exact same validation against the exact same data can't produce a
+    # different result, so retrying just burns the retry_delay for nothing.
+    @task(retries=0)
     def validate_raw(load_date: str) -> str:
-        logger.info("TODO: Day 4 - Great Expectations gate for load_date=%s", load_date)
+        result = subprocess.run(
+            [str(GX_PYTHON), str(VALIDATE_RAW_SCRIPT), "--load-date", load_date],
+            capture_output=True,
+            text=True,
+        )
+        if result.stdout:
+            logger.info(result.stdout)
+        if result.stderr:
+            logger.info(result.stderr)
+        if result.returncode != 0:
+            raise RuntimeError(f"validate_raw.py failed for load_date={load_date} (exit {result.returncode})")
         return load_date
 
     @task

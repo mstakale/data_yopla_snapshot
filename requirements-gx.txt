@@ -1,0 +1,12 @@
+# Day 4B: pinned dependencies for the GX virtualenv (include/gx/gx_venv).
+# great_expectations 1.x requires Python <3.14, incompatible with this
+# image's Python 3.14 - built on a separate uv-provisioned Python 3.12
+# (see Dockerfile), not the same interpreter as requirements.txt/requirements-dbt.txt.
+great_expectations==1.23.1
+psycopg[binary]==3.3.6
+# Pinned to exactly what /pyproject.toml's system-wide uv constraint-dependencies
+# mandates (matches Airflow 3.3.1's own SQLAlchemy pin) - uv applies that
+# constraint to any `uv pip install` in this image regardless of target venv,
+# confirmed by testing (a newer 2.0.54 pin here fails: "sqlalchemy==2.0.54 and
+# sqlalchemy==2.0.50 ... unsatisfiable"). GX 1.23.1 works fine with 2.0.50.
+sqlalchemy==2.0.50
