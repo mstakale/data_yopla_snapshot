@@ -8,9 +8,18 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_USER: ${WAREHOUSE_USER}
-      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD}
-      POSTGRES_DB: ${WAREHOUSE_DB}
+      # Day 5B finding: `astro dev start` does not forward the project's .env
+      # into this file's ${VAR} interpolation (plain `docker compose` from
+      # this directory does - confirmed directly - so this is specifically
+      # an astro-CLI merge-step gap). On a genuinely fresh volume that means
+      # Postgres gets empty POSTGRES_PASSWORD and crash-loops
+      # ("superuser password is not specified"). This went unnoticed for a
+      # long time because an already-initialized volume never re-applies
+      # these on restart. Defaults below match .env.example so a fresh clone
+      # works either way; still overridable if the interpolation does fire.
+      POSTGRES_USER: ${WAREHOUSE_USER:-postgres}
+      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD:-postgres}
+      POSTGRES_DB: ${WAREHOUSE_DB:-warehouse}
     volumes:
       - warehouse-data:/var/lib/postgresql/data
       - ./warehouse/init:/docker-entrypoint-initdb.d
