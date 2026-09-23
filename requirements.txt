@@ -5,3 +5,7 @@
 requests==2.34.2
 duckdb==1.5.5
 psycopg[binary]==3.3.6
+
+# Day 2: AIRFLOW_CONN_WAREHOUSE's postgres:// URI needs this provider to be a
+# recognized connection type (and for `airflow connections test` to work)
+apache-airflow-providers-postgres==7.0.2

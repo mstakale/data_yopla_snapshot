@@ -1,2 +1,15 @@
-# Day 3: declares raw.products as a dbt source, with a freshness check on
-# loaded_at. Not implemented yet.
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: products
+        description: >
+          Bronze snapshot of Dutch food products from Open Food Facts, one row
+          per barcode per load_date. Unvalidated by design (ELT) - quality
+          gates run in Great Expectations and dbt tests, not here.
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 26, period: hour}
+          error_after: {count: 48, period: hour}

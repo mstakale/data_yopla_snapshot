@@ -24,14 +24,15 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Virtual environments (e.g. the dbt venv built in the Dockerfile)
+# Virtual environments (.venv, .venv-dbt, etc. - glob covers any variant name)
 venv/
-.venv/
+.venv*/
 env/
 
 # dbt
 target/
 dbt_packages/
+.user.yml
 
 # Logs (Airflow container logs, etc.)
 logs/

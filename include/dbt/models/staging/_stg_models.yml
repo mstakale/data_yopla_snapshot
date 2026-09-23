@@ -1,2 +1,36 @@
-# Day 3: schema/doc definitions for stg_products (descriptions, columns,
-# governance meta added on Day 4). Not implemented yet.
+version: 2
+
+models:
+  - name: stg_products
+    description: >
+      One row per barcode, from the latest raw.products load_date, deduplicated
+      by last_modified_t. Text fields trimmed/lowercased where appropriate,
+      Nutri-Score restricted to a-e (else null), last_modified_t converted to
+      a timestamp.
+    columns:
+      - name: barcode
+        data_tests:
+          - unique
+          - not_null
+
+  - name: stg_product_nutrients
+    description: >
+      Long format: one row per barcode + nutrient, restricted to real per-100
+      mass/energy nutrients (unit in g/mg/kcal/kJ) from the latest deduplicated
+      product snapshot.
+    columns:
+      - name: barcode
+        data_tests:
+          - not_null
+      - name: nutrient
+        data_tests:
+          - not_null
+      - name: value_per_100
+        data_tests:
+          - not_null
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - barcode
+              - nutrient

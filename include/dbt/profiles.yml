@@ -1,3 +1,21 @@
-# Day 3: dbt-postgres connection profile, using env_var() for
-# WAREHOUSE_HOST/PORT/USER/PASSWORD/DB so the same file works locally,
-# in Airflow and in CI. Not implemented yet.
+# dbt-core auto-loads a .env file by walking up from the current directory,
+# which finds the repo root's .env (container-oriented: WAREHOUSE_HOST=warehouse,
+# WAREHOUSE_PORT=5432) even when you run dbt from your laptop. Unlike
+# extract.py (a plain os.environ.get() with no auto-loading), the env_var()
+# defaults below are NOT enough on their own for local runs from inside this
+# repo - explicitly override for the laptop:
+#   WAREHOUSE_HOST=localhost WAREHOUSE_PORT=5433 dbt <command> --profiles-dir .
+# (python-dotenv, which dbt uses, never overrides an already-set env var, so
+# this override wins over the auto-loaded .env.)
+food_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('WAREHOUSE_HOST', 'localhost') }}"
+      port: "{{ env_var('WAREHOUSE_PORT', '5433') | as_number }}"
+      user: "{{ env_var('WAREHOUSE_USER', 'postgres') }}"
+      password: "{{ env_var('WAREHOUSE_PASSWORD', 'postgres') }}"
+      dbname: "{{ env_var('WAREHOUSE_DB', 'warehouse') }}"
+      schema: staging
+      threads: 4

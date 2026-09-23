@@ -20,9 +20,13 @@ logger = logging.getLogger(__name__)
 # point DuckDB at the local copy.
 HF_RESOLVE_URL = "https://huggingface.co/datasets/openfoodfacts/product-database/resolve/main/food.parquet"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SOURCE_PATH = REPO_ROOT / "data" / "raw" / "_source" / "food.parquet"
-CACHE_DIR = REPO_ROOT / "data" / "raw"
+# Locally this defaults to data/raw (repo-relative); inside the Airflow
+# containers, EXTRACT_CACHE_DIR points at a container-local path instead (see
+# .env.example) so the cache never touches the host-bind-mounted folders.
+CACHE_DIR = Path(os.environ.get("EXTRACT_CACHE_DIR") or (REPO_ROOT / "data" / "raw"))
+SOURCE_PATH = CACHE_DIR / "_source" / "food.parquet"
 DDL_PATH = REPO_ROOT / "warehouse" / "init" / "02_products_table.sql"
+DUCKDB_MEMORY_LIMIT = os.environ.get("DUCKDB_MEMORY_LIMIT", "2GB")
 
 # Matches raw.products' column order (warehouse/init/02_products_table.sql),
 # minus loaded_at, which the load stage stamps at insert time instead of caching it.
@@ -102,6 +106,7 @@ def extract_to_cache(load_date: date, refresh: bool) -> Path:
     start = time.perf_counter()
 
     con = duckdb.connect()
+    con.execute(f"SET memory_limit='{DUCKDB_MEMORY_LIMIT}';")
     try:
         con.execute(
             f"""
@@ -155,6 +160,7 @@ def load_cache_to_warehouse(load_date: date, cache_path: Path) -> int:
     start = time.perf_counter()
 
     cache_con = duckdb.connect()
+    cache_con.execute(f"SET memory_limit='{DUCKDB_MEMORY_LIMIT}';")
     rows = cache_con.execute(f"SELECT * FROM read_parquet('{cache_path}')").fetchall()
     cache_con.close()
 

@@ -14,6 +14,16 @@ services:
     volumes:
       - warehouse-data:/var/lib/postgresql/data
       - ./warehouse/init:/docker-entrypoint-initdb.d
+    # Without this, compose puts warehouse on its own auto-created "default"
+    # network instead of the "airflow" network Astro's own containers share,
+    # so `warehouse:5432` would resolve from the laptop's browser/psql (which
+    # only ever use the host port mapping above) but not from inside the
+    # Airflow containers themselves.
+    networks:
+      - airflow
 
 volumes:
   warehouse-data:
+
+networks:
+  airflow:
