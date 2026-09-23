@@ -3,16 +3,27 @@ version: 2
 models:
   - name: int_products_categorised
     description: >
-      One row per barcode, resolved to a single category_l2/category_l1 via
-      seeds/category_mapping.csv (best match by priority, ties broken
-      alphabetically by tag). mapping_status distinguishes no_categories
-      (no tags at all), unmapped (tags present, none mapped yet), and mapped.
+      Grain: one row per barcode. Resolves each product's category_tags to a
+      single category_l2/category_l1 via seeds/category_mapping.csv.
+      {{ doc('category_priority_rule') }}
     columns:
       - name: barcode
+        description: References stg_products.barcode.
         data_tests:
           - unique
           - not_null
+      - name: matched_tag
+        description: The winning Open Food Facts category tag (lowercased), or null if mapping_status is not 'mapped'.
+      - name: category_l2
+        description: Resolved taxonomy L2 category (see seeds/category_taxonomy.csv); 'other' when unmapped or no categories at all.
+      - name: category_l1
+        description: Resolved taxonomy L1 category, from the same taxonomy row as category_l2.
       - name: mapping_status
+        description: >
+          'mapped' if a category_mapping tag matched (even if it maps to
+          'other', e.g. en:groceries), 'unmapped' if the product has tags but
+          none are in category_mapping yet, 'no_categories' if it has no
+          category tags at all.
         data_tests:
           - accepted_values:
               arguments:

@@ -83,6 +83,7 @@ def food_pipeline():
     @task
     def dbt_build(load_date: str) -> None:
         run_dbt("deps")
+        run_dbt("source", "freshness")
         run_dbt("build", "--vars", json.dumps({"load_date": load_date}))
 
     dbt_build(validate_raw(extract_load()))

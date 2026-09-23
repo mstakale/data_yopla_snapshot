@@ -7,9 +7,33 @@ models:
       seed plus a surrogate category_key.
     columns:
       - name: category_key
+        description: Surrogate key, generate_surrogate_key(['category_l2']).
         data_tests:
           - unique
           - not_null
+      - name: category_l2
+        description: Taxonomy L2 category name (see seeds/category_taxonomy.csv).
+      - name: category_l1
+        description: Taxonomy L1 group this L2 belongs to.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - dairy
+                  - meat_fish_protein
+                  - plant_protein
+                  - vegetables
+                  - fruit
+                  - grains_bread_pasta
+                  - snacks_sweets
+                  - beverages
+                  - sauces_condiments
+                  - fats_oils
+                  - ready_meals
+                  - non_food
+                  - other
+      - name: description
+        description: One-line human-readable description of the category.
 
   - name: dim_brand
     description: >
@@ -17,9 +41,14 @@ models:
       products with no brand.
     columns:
       - name: brand_key
+        description: Surrogate key, generate_surrogate_key(['brand_key_source']) - the normalised (trim/lowercase/whitespace-collapsed) brand text.
         data_tests:
           - unique
           - not_null
+      - name: brand_name
+        description: Display spelling - the most common original (non-normalised) spelling for this brand, ties broken alphabetically.
+      - name: product_count
+        description: Number of products (in dim_product) with this as their primary brand.
 
   - name: dim_product
     description: >
@@ -27,21 +56,48 @@ models:
       stable, unique natural key from the source - no surrogate needed).
     columns:
       - name: product_key
+        description: The product's barcode.
         data_tests:
           - unique
           - not_null
+      - name: product_name
+        description: Resolved product name (see stg_products.product_name).
+      - name: quantity
+        description: Free-text product quantity as reported by the source.
+      - name: nutriscore_grade
+        description: Nutri-Score grade, a-e or null.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['a', 'b', 'c', 'd', 'e']
+      - name: nutrition_basis
+        description: "{{ doc('nutrition_basis') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['100g', '100ml']
+      - name: last_modified_at
+        description: When the source last modified this product (see stg_products.last_modified_at).
       - name: brand_key
+        description: References dim_brand.brand_key.
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_brand')
                 field: brand_key
       - name: category_key
+        description: References dim_category.category_key.
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_category')
                 field: category_key
+      - name: mapping_status
+        description: Category resolution status (see int_products_categorised.mapping_status).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['mapped', 'unmapped', 'no_categories']
 
   - name: fct_nutrition
     description: >
@@ -49,18 +105,69 @@ models:
       nutrient_reference; nutrients not in that seed are excluded, as are
       negative values.
     columns:
-      - name: brand_key
+      - name: product_key
+        description: References dim_product.product_key.
         data_tests:
+          - not_null
           - relationships:
               arguments:
-                to: ref('dim_brand')
-                field: brand_key
+                to: ref('dim_product')
+                field: product_key
+      - name: nutrient
+        description: Nutrient name (see seeds/nutrient_reference.csv for the canonical list and grouping).
+        data_tests:
+          - not_null
+      - name: value_per_100
+        description: >
+          Per-100(g/ml) value, standardised to nutrient_reference.standard_unit
+          - a relabel for mass nutrients (the number was already correct),
+          a real kcal-to-kJ conversion for the generic 'energy' nutrient.
+        data_tests:
+          - not_null
+          - test_value_between:
+              arguments:
+                min_value: 0
+                max_value: 100
+                # dbt's YAML test-config parser rejects ref() inside argument
+                # values ("does not support using custom macros"), confirmed
+                # directly - so this references the seed's fixed schema
+                # (staging, set in dbt_project.yml) by name instead.
+                where: "nutrient in (select nutrient from staging.nutrient_reference where is_mass)"
+              config:
+                severity: warn
+                warn_if: ">0"
+                error_if: ">800"
+          - test_value_between:
+              arguments:
+                min_value: 0
+                max_value: 900
+                where: "nutrient = 'energy-kcal'"
+              config:
+                severity: warn
+                warn_if: ">0"
+                error_if: ">200"
+      - name: unit
+        description: Standardised unit - g for mass nutrients, kcal or kJ for energy.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['g', 'kcal', 'kJ']
+      - name: basis
+        description: "{{ doc('nutrition_basis') }}"
       - name: category_key
+        description: Denormalised from dim_product, for slicing without an extra join.
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_category')
                 field: category_key
+      - name: brand_key
+        description: Denormalised from dim_product, for slicing without an extra join.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_brand')
+                field: brand_key
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

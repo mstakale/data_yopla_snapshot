@@ -3,31 +3,75 @@ version: 2
 models:
   - name: stg_products
     description: >
-      One row per barcode, from the latest raw.products load_date, deduplicated
-      by last_modified_t. Text fields trimmed/lowercased where appropriate,
-      Nutri-Score restricted to a-e (else null), last_modified_t converted to
-      a timestamp.
+      Grain: one row per barcode. Latest raw.products load_date only,
+      deduplicated by last_modified_t (see model SQL for the exact tie-break).
+      Text fields trimmed/lowercased where appropriate; empty strings become
+      null; Nutri-Score restricted to a-e (else null); last_modified_t
+      converted to a timestamp.
     columns:
       - name: barcode
+        description: >
+          Product barcode (EAN-8/UPC-A/EAN-13/GS1-14), kept as text - leading
+          zeros matter, and it's never used arithmetically.
         data_tests:
           - unique
           - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "~ '^[0-9]{8,14}$'"
+              config:
+                severity: warn
+                warn_if: ">0"
+                error_if: ">1000"
+      - name: product_name
+        description: >
+          Resolved product name: Dutch if available, else English, else
+          whichever language the source had (see model SQL).
+      - name: brands
+        description: Raw comma-separated brands string, as reported by the source (unsplit - see dim_brand for the parsed primary brand).
+      - name: categories_tags
+        description: Raw JSON array of Open Food Facts category tags, passed through untouched for int_products_categorised to resolve.
+      - name: nutriments
+        description: Raw JSON array of per-nutrient objects, passed through untouched for stg_product_nutrients to unnest.
+      - name: quantity
+        description: Free-text product quantity as reported by the source, e.g. "500 g".
+      - name: product_quantity_unit
+        description: Unit portion of the product's own quantity (e.g. "g", "ml"), used as one input to dim_product's nutrition_basis heuristic.
+      - name: nutrition_data_per
+        description: "{{ doc('nutrition_basis') }}"
+      - name: nutriscore_grade
+        description: Nutri-Score grade, restricted to a-e; 'unknown'/'not-applicable'/anything unexpected becomes null.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['a', 'b', 'c', 'd', 'e']
+      - name: last_modified_at
+        description: last_modified_t (Unix seconds) converted to a timestamp.
+      - name: load_date
+        description: The raw.products load_date this row was resolved from (see the dbt var load_date, added Day 3D).
 
   - name: stg_product_nutrients
     description: >
-      Long format: one row per barcode + nutrient, restricted to real per-100
-      mass/energy nutrients (unit in g/mg/kcal/kJ) from the latest deduplicated
-      product snapshot.
+      Grain: one row per barcode + nutrient. Long format, built on
+      stg_products (not the raw source) so "latest load, deduplicated" is
+      inherited rather than recomputed. Restricted to real per-100
+      mass/energy nutrients (unit in g/mg/kcal/kJ, value not null) - see
+      model SQL for what that filter excludes and why.
     columns:
       - name: barcode
+        description: References stg_products.barcode.
         data_tests:
           - not_null
       - name: nutrient
+        description: Nutrient name exactly as reported by the source (e.g. "sugars", "energy-kcal") - see nutrient_reference for the canonical list.
         data_tests:
           - not_null
       - name: value_per_100
+        description: Per-100(g/ml) value, already gram-normalised by the source for mass nutrients regardless of the raw unit label (verified during Day 3C planning).
         data_tests:
           - not_null
+      - name: unit
+        description: Unit as reported by the source (not yet standardised - see fct_nutrition for that).
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

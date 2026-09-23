@@ -7,9 +7,14 @@ seeds:
       L2 category. Becomes dim_category in marts.
     columns:
       - name: category_l2
+        description: Taxonomy L2 category name - the grain of this seed.
         data_tests:
           - unique
           - not_null
+      - name: category_l1
+        description: Taxonomy L1 group this L2 belongs to.
+      - name: description
+        description: One-line human-readable description of the category.
 
   - name: category_mapping
     description: >
@@ -18,16 +23,20 @@ seeds:
       wins (more specific tags get a lower number than broad umbrella tags).
     columns:
       - name: off_category_tag
+        description: Open Food Facts category tag, lowercased (matched case-insensitively against the source's own tags).
         data_tests:
           - unique
           - not_null
       - name: category_l2
+        description: The category_l2 this tag maps to.
         data_tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('category_taxonomy')
                 field: category_l2
+      - name: priority
+        description: Tie-break rank when a product has multiple mapped tags - lower wins.
 
   - name: nutrient_reference
     description: >
@@ -36,6 +45,15 @@ seeds:
       not listed here is excluded from fct_nutrition.
     columns:
       - name: nutrient
+        description: Nutrient name exactly as it appears in the source's nutriments JSON - the grain of this seed.
         data_tests:
           - unique
           - not_null
+      - name: display_name
+        description: Human-readable nutrient name.
+      - name: standard_unit
+        description: The unit fct_nutrition standardises this nutrient's value_per_100 to.
+      - name: nutrient_group
+        description: One of macronutrient, energy, mineral, vitamin, other.
+      - name: is_mass
+        description: True for nutrients measured as a mass (g); false for the three energy entries.
