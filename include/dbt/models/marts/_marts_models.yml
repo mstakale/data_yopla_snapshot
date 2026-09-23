@@ -104,9 +104,24 @@ models:
       Grain: one row per product_key + nutrient. Units standardised via
       nutrient_reference; nutrients not in that seed are excluded, as are
       negative values.
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns: [product_key, nutrient]
+      - type: check
+        # Documents fct_nutrition.sql:31's own `where value_per_100 >= 0`
+        # filter as a real Postgres invariant - catches a future refactor
+        # that accidentally drops that filter, not just today's data.
+        expression: "value_per_100 >= 0"
+        columns: [value_per_100]
     columns:
       - name: product_key
+        data_type: text
         description: References dim_product.product_key.
+        constraints:
+          - type: not_null
         data_tests:
           - not_null
           - relationships:
@@ -114,14 +129,20 @@ models:
                 to: ref('dim_product')
                 field: product_key
       - name: nutrient
+        data_type: text
         description: Nutrient name (see seeds/nutrient_reference.csv for the canonical list and grouping).
+        constraints:
+          - type: not_null
         data_tests:
           - not_null
       - name: value_per_100
+        data_type: numeric
         description: >
           Per-100(g/ml) value, standardised to nutrient_reference.standard_unit
           - a relabel for mass nutrients (the number was already correct),
           a real kcal-to-kJ conversion for the generic 'energy' nutrient.
+        constraints:
+          - type: not_null
         data_tests:
           - not_null
           - test_value_between:
@@ -147,22 +168,34 @@ models:
                 warn_if: ">0"
                 error_if: ">200"
       - name: unit
+        data_type: text
         description: Standardised unit - g for mass nutrients, kcal or kJ for energy.
+        constraints:
+          - type: not_null
         data_tests:
           - accepted_values:
               arguments:
                 values: ['g', 'kcal', 'kJ']
       - name: basis
+        data_type: text
         description: "{{ doc('nutrition_basis') }}"
+        constraints:
+          - type: not_null
       - name: category_key
+        data_type: text
         description: Denormalised from dim_product, for slicing without an extra join.
+        constraints:
+          - type: not_null
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_category')
                 field: category_key
       - name: brand_key
+        data_type: text
         description: Denormalised from dim_product, for slicing without an extra join.
+        constraints:
+          - type: not_null
         data_tests:
           - relationships:
               arguments:

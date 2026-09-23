@@ -1,2 +1,197 @@
-# Day 5: readable companion to fct_nutrition's enforced dbt model contract —
-# documents its schema, quality thresholds, owner and SLA. Not implemented yet.
+apiVersion: v3.0.1
+kind: DataContract
+id: food_warehouse.fct_nutrition
+name: fct_nutrition
+version: 1.0.0
+status: active
+domain: food_warehouse
+
+description:
+  purpose: >
+    Nutrition facts for Dutch food products, one row per product_key +
+    nutrient, with each nutrient's value standardised to a single unit
+    (nutrient_reference.standard_unit). Backs nutrition analytics/reporting
+    over the marts.dim_product / dim_brand / dim_category star schema.
+  usage: >
+    Join on product_key (= dim_product.product_key, the product barcode) to
+    bring in product/brand/category attributes. category_key and brand_key
+    are already denormalised onto this table for slicing without a join.
+  limitations: >
+    Source data (Open Food Facts) is volunteer-entered; there is no ground
+    truth to verify accuracy against. Quality checks below verify
+    plausibility (values within a physically possible range) and internal
+    consistency, not correctness of any individual value. See
+    DATA_QUALITY.md for the full inventory of checks across the pipeline
+    and known data limitations.
+
+schema:
+  - name: fct_nutrition
+    logicalType: object
+    physicalType: table
+    physicalName: marts.fct_nutrition
+    description: >
+      Grain: one row per product_key + nutrient. Units standardised via
+      nutrient_reference; nutrients not in that seed are excluded, as are
+      negative values.
+    properties:
+      - name: product_key
+        logicalType: string
+        physicalType: text
+        required: true
+        primaryKey: true
+        primaryKeyPosition: 1
+        description: References dim_product.product_key (the product's barcode).
+      - name: nutrient
+        logicalType: string
+        physicalType: text
+        required: true
+        primaryKey: true
+        primaryKeyPosition: 2
+        description: >
+          Nutrient name (see seeds/nutrient_reference.csv for the canonical
+          list and grouping).
+      - name: value_per_100
+        logicalType: number
+        physicalType: numeric
+        required: true
+        description: >
+          Per-100(g/ml) value, standardised to
+          nutrient_reference.standard_unit - a relabel for mass nutrients
+          (the number was already correct), a real kcal-to-kJ conversion for
+          the generic 'energy' nutrient. Never negative (excluded, not
+          nulled, at build time).
+        quality:
+          - type: sql
+            description: >
+              Mass-nutrient values (fat, carbohydrates, proteins, etc.) must
+              be within [0, 100] per 100g/ml - the physical maximum for a
+              per-100 mass fraction, with headroom for reporting noise.
+              Threshold taken verbatim from the dbt test config
+              (models/marts/_marts_models.yml): warn on any failure, error
+              above 800 (272 failures observed against 34,754 eligible rows
+              at the time this contract was written).
+            query: >
+              select count(*) from marts.fct_nutrition
+              where nutrient in (select nutrient from staging.nutrient_reference where is_mass)
+              and value_per_100 not between 0 and 100
+            mustBeLessOrEqualTo: 800
+            dimension: conformity
+            severity: warning
+          - type: sql
+            description: >
+              energy-kcal values must be within [0, 900] per 100g/ml.
+              Threshold taken verbatim from the dbt test config: warn on any
+              failure, error above 200 (61 failures observed at the time
+              this contract was written).
+            query: >
+              select count(*) from marts.fct_nutrition
+              where nutrient = 'energy-kcal'
+              and value_per_100 not between 0 and 900
+            mustBeLessOrEqualTo: 200
+            dimension: conformity
+            severity: warning
+      - name: unit
+        logicalType: string
+        physicalType: text
+        required: true
+        description: Standardised unit - g for mass nutrients, kcal or kJ for energy.
+        quality:
+          - type: sql
+            description: unit must be one of g, kcal, kJ (dbt accepted_values test).
+            query: "select count(*) from marts.fct_nutrition where unit not in ('g', 'kcal', 'kJ')"
+            mustBe: 0
+            dimension: conformity
+            severity: error
+      - name: basis
+        logicalType: string
+        physicalType: text
+        required: true
+        description: >
+          Nutrition basis - '100g' or '100ml'. See doc('nutrition_basis') in
+          the dbt project for the inference heuristic used when the source
+          doesn't state this explicitly.
+      - name: category_key
+        logicalType: string
+        physicalType: text
+        required: true
+        description: >
+          Denormalised from dim_product. References dim_category.category_key.
+        quality:
+          - type: sql
+            description: category_key must reference an existing dim_category row (dbt relationships test).
+            query: >
+              select count(*) from marts.fct_nutrition f
+              left join marts.dim_category c on f.category_key = c.category_key
+              where c.category_key is null
+            mustBe: 0
+            dimension: consistency
+            severity: error
+      - name: brand_key
+        logicalType: string
+        physicalType: text
+        required: true
+        description: >
+          Denormalised from dim_product. References dim_brand.brand_key.
+        quality:
+          - type: sql
+            description: brand_key must reference an existing dim_brand row (dbt relationships test).
+            query: >
+              select count(*) from marts.fct_nutrition f
+              left join marts.dim_brand b on f.brand_key = b.brand_key
+              where b.brand_key is null
+            mustBe: 0
+            dimension: consistency
+            severity: error
+    quality:
+      - type: sql
+        description: >
+          Grain must hold: exactly one row per (product_key, nutrient)
+          combination (dbt_utils.unique_combination_of_columns test; also
+          enforced as a Postgres primary key by the dbt model contract).
+        query: >
+          select count(*) from (
+            select product_key, nutrient, count(*) as n
+            from marts.fct_nutrition
+            group by product_key, nutrient
+            having count(*) > 1
+          ) dupes
+        mustBe: 0
+        dimension: uniqueness
+        severity: error
+
+team:
+  - username: Manisha Takale
+    role: Owner
+
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+    element: fct_nutrition
+  - property: latency
+    value: 26
+    unit: h
+    element: fct_nutrition
+    # This table can never be fresher than its raw source: raw.products'
+    # own freshness is checked at 26h-warn / 48h-error by both the GX gate
+    # (loaded_at is within the last 26 hours) and dbt source freshness -
+    # figures taken verbatim from include/gx/validate_raw.py and
+    # models/staging/_sources.yml, not invented for this contract.
+
+tags: [public, no-pii]
+
+customProperties:
+  - property: classification
+    value: public
+  - property: containsPii
+    value: false
+  - property: licence
+    value: "Open Database License (ODbL) v1.0"
+  - property: availability
+    value: "best-effort - local portfolio project, no uptime SLA"
+
+authoritativeDefinitions:
+  - url: https://opendatacommons.org/licenses/odbl/
+    type: businessDefinition
+  - url: https://world.openfoodfacts.org/
+    type: businessDefinition
