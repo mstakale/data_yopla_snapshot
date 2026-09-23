@@ -1,7 +1,16 @@
-with latest_load as (
+{{ validate_load_date_var() }}
 
-    select max(load_date) as load_date
-    from {{ source('raw', 'products') }}
+with target_load_date as (
+
+    -- dbt var load_date lets a specific partition be (re)built - e.g. for a
+    -- backfill, or from the Airflow DAG, which always passes the run's date
+    -- explicitly. With no var, defaults to the latest load_date so local
+    -- `dbt build` still works unchanged.
+    {% if var('load_date', none) is not none %}
+    select '{{ var("load_date") }}'::date as load_date
+    {% else %}
+    select max(load_date) as load_date from {{ source('raw', 'products') }}
+    {% endif %}
 
 ),
 
@@ -14,7 +23,7 @@ deduped as (
             order by p.last_modified_t desc, p.loaded_at desc
         ) as rn
     from {{ source('raw', 'products') }} p
-    inner join latest_load using (load_date)
+    inner join target_load_date using (load_date)
 
 )
 
