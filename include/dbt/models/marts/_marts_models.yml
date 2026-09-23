@@ -1,3 +1,69 @@
-# Day 3: schema/doc definitions for the marts models. Day 4 adds tests
-# (unique, not_null, relationships, accepted_values) and governance meta
-# (owner, source, classification, contains_pii). Not implemented yet.
+version: 2
+
+models:
+  - name: dim_category
+    description: >
+      Grain: one row per category_l2. Straight copy of the category_taxonomy
+      seed plus a surrogate category_key.
+    columns:
+      - name: category_key
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_brand
+    description: >
+      Grain: one row per normalised primary brand, plus one 'unknown' row for
+      products with no brand.
+    columns:
+      - name: brand_key
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_product
+    description: >
+      Grain: one row per barcode. product_key is the barcode itself (a
+      stable, unique natural key from the source - no surrogate needed).
+    columns:
+      - name: product_key
+        data_tests:
+          - unique
+          - not_null
+      - name: brand_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_brand')
+                field: brand_key
+      - name: category_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_category')
+                field: category_key
+
+  - name: fct_nutrition
+    description: >
+      Grain: one row per product_key + nutrient. Units standardised via
+      nutrient_reference; nutrients not in that seed are excluded, as are
+      negative values.
+    columns:
+      - name: brand_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_brand')
+                field: brand_key
+      - name: category_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_category')
+                field: category_key
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - product_key
+              - nutrient

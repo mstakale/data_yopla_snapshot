@@ -29,6 +29,8 @@ select
     categories_tags,
     nutriments,
     nullif(trim(quantity), '') as quantity,
+    nullif(trim(product_quantity_unit), '') as product_quantity_unit,
+    nutrition_data_per,
     case
         when lower(trim(nutriscore_grade)) in ('a', 'b', 'c', 'd', 'e')
             then lower(trim(nutriscore_grade))

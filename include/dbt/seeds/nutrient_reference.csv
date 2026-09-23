@@ -1,0 +1,73 @@
+nutrient,display_name,standard_unit,nutrient_group,is_mass
+energy,Energy,kJ,energy,false
+energy-kcal,Energy (kcal),kcal,energy,false
+energy-kj,Energy (kJ),kJ,energy,false
+proteins,Protein,g,macronutrient,true
+carbohydrates,Carbohydrates,g,macronutrient,true
+sugars,Sugars,g,macronutrient,true
+added-sugars,Added sugars,g,macronutrient,true
+sucrose,Sucrose,g,macronutrient,true
+glucose,Glucose,g,macronutrient,true
+fructose,Fructose,g,macronutrient,true
+lactose,Lactose,g,macronutrient,true
+maltose,Maltose,g,macronutrient,true
+galactose,Galactose,g,macronutrient,true
+fat,Fat,g,macronutrient,true
+saturated-fat,Saturated fat,g,macronutrient,true
+monounsaturated-fat,Monounsaturated fat,g,macronutrient,true
+polyunsaturated-fat,Polyunsaturated fat,g,macronutrient,true
+unsaturated-fat,Unsaturated fat,g,macronutrient,true
+trans-fat,Trans fat,g,macronutrient,true
+omega-3-fat,Omega-3 fat,g,macronutrient,true
+omega-6-fat,Omega-6 fat,g,macronutrient,true
+palmitic-acid,Palmitic acid,g,macronutrient,true
+stearic-acid,Stearic acid,g,macronutrient,true
+myristic-acid,Myristic acid,g,macronutrient,true
+lauric-acid,Lauric acid,g,macronutrient,true
+caprylic-acid,Caprylic acid,g,macronutrient,true
+caproic-acid,Caproic acid,g,macronutrient,true
+capric-acid,Capric acid,g,macronutrient,true
+butyric-acid,Butyric acid,g,macronutrient,true
+eicosapentaenoic-acid,Eicosapentaenoic acid (EPA),g,macronutrient,true
+docosahexaenoic-acid,Docosahexaenoic acid (DHA),g,macronutrient,true
+alpha-linolenic-acid,Alpha-linolenic acid,g,macronutrient,true
+linoleic-acid,Linoleic acid,g,macronutrient,true
+oleic-acid,Oleic acid,g,macronutrient,true
+arachidonic-acid,Arachidonic acid,g,macronutrient,true
+fiber,Fiber,g,macronutrient,true
+starch,Starch,g,macronutrient,true
+polyols,Polyols,g,macronutrient,true
+cholesterol,Cholesterol,g,other,true
+water,Water,g,other,true
+caffeine,Caffeine,g,other,true
+cocoa,Cocoa,g,other,true
+sodium,Sodium,g,mineral,true
+salt,Salt,g,mineral,true
+added-salt,Added salt,g,mineral,true
+chloride,Chloride,g,mineral,true
+calcium,Calcium,g,mineral,true
+iron,Iron,g,mineral,true
+magnesium,Magnesium,g,mineral,true
+zinc,Zinc,g,mineral,true
+phosphorus,Phosphorus,g,mineral,true
+copper,Copper,g,mineral,true
+manganese,Manganese,g,mineral,true
+potassium,Potassium,g,mineral,true
+selenium,Selenium,g,mineral,true
+iodine,Iodine,g,mineral,true
+vitamin-a,Vitamin A,g,vitamin,true
+beta-carotene,Beta-carotene,g,vitamin,true
+vitamin-b1,Vitamin B1 (thiamin),g,vitamin,true
+vitamin-b2,Vitamin B2 (riboflavin),g,vitamin,true
+vitamin-b6,Vitamin B6,g,vitamin,true
+vitamin-b9,Vitamin B9 (folate),g,vitamin,true
+vitamin-b12,Vitamin B12,g,vitamin,true
+vitamin-pp,Vitamin PP (niacin/B3),g,vitamin,true
+pantothenic-acid,Pantothenic acid (B5),g,vitamin,true
+biotin,Biotin (B7),g,vitamin,true
+vitamin-c,Vitamin C,g,vitamin,true
+vitamin-d,Vitamin D,g,vitamin,true
+vitamin-e,Vitamin E,g,vitamin,true
+vitamin-k,Vitamin K,g,vitamin,true
+phylloquinone,Vitamin K1 (phylloquinone),g,vitamin,true
+choline,Choline,g,vitamin,true

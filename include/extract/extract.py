@@ -50,6 +50,7 @@ RAW_COLUMNS = [
     "labels_tags",
     "data_quality_warnings_tags",
     "unique_scans_n",
+    "nutrition_data_per",
     "load_date",
 ]
 
@@ -131,6 +132,7 @@ def extract_to_cache(load_date: date, refresh: bool) -> Path:
                     to_json(labels_tags) AS labels_tags,
                     to_json(data_quality_warnings_tags) AS data_quality_warnings_tags,
                     unique_scans_n,
+                    nutrition_data_per,
                     DATE '{load_date.isoformat()}' AS load_date
                 FROM read_parquet('{source_path}')
                 WHERE list_contains(countries_tags, 'en:netherlands')

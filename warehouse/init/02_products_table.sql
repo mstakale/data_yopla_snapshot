@@ -29,8 +29,16 @@ CREATE TABLE IF NOT EXISTS raw.products (
     labels_tags jsonb,
     data_quality_warnings_tags jsonb,
     unique_scans_n integer,
+    nutrition_data_per text,
     load_date date NOT NULL,
     loaded_at timestamptz NOT NULL
 );
+
+-- Day 3C: added after the table already existed and had data - CREATE TABLE
+-- IF NOT EXISTS above is a no-op against an existing table, so this ALTER is
+-- what actually migrates it. Kept in the same file (not a separate migration
+-- script) so extract.py's load stage - which re-runs this whole file every
+-- run - stays the single source of truth for the schema either way.
+ALTER TABLE raw.products ADD COLUMN IF NOT EXISTS nutrition_data_per text;
 
 CREATE INDEX IF NOT EXISTS idx_products_load_date ON raw.products (load_date);

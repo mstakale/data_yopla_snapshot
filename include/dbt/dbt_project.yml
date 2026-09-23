@@ -39,3 +39,10 @@ seeds:
         off_category_tag: text
         category_l2: text
         priority: int
+    nutrient_reference:
+      +column_types:
+        nutrient: text
+        display_name: text
+        standard_unit: text
+        nutrient_group: text
+        is_mass: boolean

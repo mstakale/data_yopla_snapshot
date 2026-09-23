@@ -25,5 +25,17 @@ seeds:
         data_tests:
           - not_null
           - relationships:
-              to: ref('category_taxonomy')
-              field: category_l2
+              arguments:
+                to: ref('category_taxonomy')
+                field: category_l2
+
+  - name: nutrient_reference
+    description: >
+      Reference list of nutrients recognised in fct_nutrition, with a
+      standardised unit per nutrient. Any nutrient in stg_product_nutrients
+      not listed here is excluded from fct_nutrition.
+    columns:
+      - name: nutrient
+        data_tests:
+          - unique
+          - not_null
