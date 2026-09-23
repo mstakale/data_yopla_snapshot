@@ -1,0 +1,7 @@
+# Astro Runtime includes the following pre-installed providers packages: https://www.astronomer.io/docs/astro/runtime-image-architecture#provider-packages
+
+# Day 1: include/extract/extract.py (requests to download the source file,
+# DuckDB to filter it locally, psycopg for the warehouse load)
+requests==2.34.2
+duckdb==1.5.5
+psycopg[binary]==3.3.6

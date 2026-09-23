@@ -1,0 +1,5 @@
+# Day 6: CI workflow triggered on push and pull_request. Starts a Postgres
+# service container, installs dbt from a pinned file, runs
+# scripts/load_sample.py to load tests/fixtures/sample_products.csv into
+# raw.products, then runs `dbt deps`, `dbt seed` and `dbt build`.
+# Not implemented yet.

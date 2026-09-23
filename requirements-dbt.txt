@@ -1,0 +1,3 @@
+# Day 3: pinned dependencies for the dbt virtualenv built in the Dockerfile
+# (dbt-core, dbt-postgres), kept separate from requirements.txt to avoid
+# conflicting with Airflow's own dependencies. Not implemented yet.

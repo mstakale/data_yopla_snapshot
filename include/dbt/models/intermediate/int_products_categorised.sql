@@ -1,0 +1,3 @@
+-- Day 3: resolves each product to one primary taxonomy category using the
+-- category_mapping seed, with a documented tie-break rule for products
+-- matching multiple categories. Not implemented yet.

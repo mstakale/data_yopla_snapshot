@@ -1,0 +1,5 @@
+-- Day 3: staging model. Takes the latest load_date snapshot of raw.products,
+-- renames/casts columns, trims/lowercases text, converts last_modified_t to a
+-- timestamp, nulls out unknown/not-applicable Nutri-Score, flattens the
+-- nutriments JSON, and deduplicates on barcode keeping the latest last_modified.
+-- Not implemented yet.

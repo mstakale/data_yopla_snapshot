@@ -1,0 +1,2 @@
+-- Day 3: one row per brand, splitting the comma-separated brands field, with
+-- a documented rule for choosing the primary brand. Not implemented yet.

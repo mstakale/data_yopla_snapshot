@@ -1,0 +1,2 @@
+# Day 6: small fixture of sample product rows, shaped like raw.products,
+# loaded by scripts/load_sample.py in CI. Not implemented yet.

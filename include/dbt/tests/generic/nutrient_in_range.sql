@@ -1,0 +1,3 @@
+-- Day 4: custom generic test asserting mass nutrients (per 100g/100ml) fall
+-- between 0 and 100. Energy (kcal, kJ) is excluded since it legitimately
+-- exceeds 100. Not implemented yet.

@@ -1,0 +1,3 @@
+# Day 3: schema/doc definitions for the marts models. Day 4 adds tests
+# (unique, not_null, relationships, accepted_values) and governance meta
+# (owner, source, classification, contains_pii). Not implemented yet.

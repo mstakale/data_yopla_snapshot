@@ -1,0 +1,3 @@
+# Day 3: dbt project config for `food_warehouse` (medallion architecture:
+# staging/intermediate/marts, each materialising into its own schema).
+# Not implemented yet.

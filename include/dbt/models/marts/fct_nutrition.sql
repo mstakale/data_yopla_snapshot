@@ -1,0 +1,3 @@
+-- Day 3: long-format fact, one row per product per nutrient
+-- (product_key, nutrient, value_per_100, unit, basis). Gets a dbt contract
+-- enforced on Day 5. Not implemented yet.

@@ -1,0 +1,2 @@
+-- Day 3: one row per barcode, with name, quantity, Nutri-Score, brand key
+-- and category key. Not implemented yet.

@@ -1,0 +1,2 @@
+# Day 3: declares raw.products as a dbt source, with a freshness check on
+# loaded_at. Not implemented yet.

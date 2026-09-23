@@ -1,0 +1,3 @@
+# Day 3: dbt-postgres connection profile, using env_var() for
+# WAREHOUSE_HOST/PORT/USER/PASSWORD/DB so the same file works locally,
+# in Airflow and in CI. Not implemented yet.
